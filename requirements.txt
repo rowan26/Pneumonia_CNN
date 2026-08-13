@@ -1,0 +1,9 @@
+# Deep learning
+torch
+torchvision
+torchxrayvision
+
+# Image Processing and Visualization
+pillow
+scikit-image
+matplotlib
