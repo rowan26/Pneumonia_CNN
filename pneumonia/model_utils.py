@@ -1,4 +1,3 @@
-from pneumonia.model_loader import load_model
 import torch.nn as nn
 
 
@@ -20,6 +19,7 @@ def adapt_model_head(model, num_classes: int=2) -> nn.Module:
         Le même modèle, avec sa tête remplacée.
     """
 
+    model.op_threshs = None
     in_features = model.classifier.in_features
 
     model.classifier = nn.Linear(in_features=in_features, out_features=num_classes)
