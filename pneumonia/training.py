@@ -1,5 +1,6 @@
 import torch
 from datetime import datetime
+from pathlib import Path
 
 
 def train_one_epoch(model, dataloader, loss_fn, optimizer,device, print_every: int = 1) -> tuple[float, float]:
@@ -86,7 +87,8 @@ def train_model(
         loss_fn, 
         optimizer,
         device,
-        num_epochs: int=10) -> dict:
+        num_epochs: int=10,
+        checkpoint_path: Path=Path("artifacts/best_model.pth")) -> dict:
 
     """Entraîne le modèle sur plusieurs epochs, en évaluant sur val après
     chaque epoch. Retourne l'historique complet des métriques, pour permettre
@@ -99,11 +101,19 @@ def train_model(
         "val_loss": [],
         "val_accuracy": [],
     }
+    
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+
+    best_val_loss=float("inf")
 
     for epoch in range(num_epochs):
 
         train_loss, train_accuracy=train_one_epoch(model,train_dataloader,loss_fn,optimizer,device)
         val_loss, val_accuracy=evaluate_one_epoch(model,val_dataloader,loss_fn,device)
+
+        if val_loss < best_val_loss:
+            torch.save(model.state_dict(), checkpoint_path)
+            best_val_loss=val_loss
 
         history["train_loss"].append(train_loss)
         history["train_accuracy"].append(train_accuracy)
