@@ -9,10 +9,11 @@ from pneumonia.model_utils import adapt_model_head
 from pneumonia.training import train_model
 
 
-def main(num_epochs: int=1, learning_rate: float=1e-4) -> None:
+def main(data_dir: Path | None = None,num_epochs: int=1, learning_rate: float=1e-4) -> None:
 
-    project_root = Path(__file__).resolve().parent.parent
-    data_dir= project_root / "data" / "chest_xray"
+    if data_dir is None:
+        project_root = Path(__file__).resolve().parent.parent
+        data_dir = project_root / "data" / "chest_xray"
     
     normal_paths = list_image_paths(data_dir / "train" / "NORMAL")
     pneumonia_paths = list_image_paths(data_dir / "train" / "PNEUMONIA")
