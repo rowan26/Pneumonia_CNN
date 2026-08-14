@@ -2,6 +2,7 @@ from pneumonia.input_validation import is_valid_extension
 from pathlib import Path
 import random
 from collections import Counter
+import torch
 
 def count_images(path: Path) -> int:
     """Compte les fichiers valides (extension autorisée) dans un dossier."""
@@ -123,4 +124,17 @@ def compute_class_weights(train_pairs: list[tuple[Path,int]]) -> dict:
     sum_total=len(train_pairs)
     num_classes=len(train_counts)
     return {label: sum_total / (num_classes * count) for label, count in train_counts.items()}
+
+
+def class_weights_to_tensor(weights: dict) -> torch.Tensor:
     
+    """Convertit un dictionnaire {label: poids} en tensor, trié par label
+    croissant, pour être utilisable directement comme paramètre `weight`
+    d'une fonction de loss PyTorch (ex. CrossEntropyLoss).
+    """
+
+    sorted_dict=sorted(weights.items())
+    weights_only=[weight for _,weight in sorted_dict]
+    tensor=torch.tensor(weights_only)
+
+    return tensor
