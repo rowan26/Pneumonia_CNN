@@ -111,6 +111,17 @@ def stratified_train_val_split(
     return train_pairs, val_pairs
 
 
+def build_pairs(normal_paths: list[Path], pneumonia_paths: list[Path]) -> list[tuple[Path, int]]:
+    """Associe chaque chemin à son label (0 = NORMAL, 1 = PNEUMONIA) et concatène les deux classes en une seule liste de paires."""
+
+
+    normal_labeled=[(path,0) for path in normal_paths]
+    pneumonia_labeled=[(path,1) for path in pneumonia_paths]
+    pairs = normal_labeled + pneumonia_labeled
+    
+    return pairs
+
+
 def compute_class_weights(train_pairs: list[tuple[Path,int]]) -> dict:
 
     """Calcule un poids par classe, inversement proportionnel à sa fréquence.

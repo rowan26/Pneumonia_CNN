@@ -1,8 +1,12 @@
-from pneumonia.model_loader import load_model
+from pneumonia.model_loader import load_model, load_finetuned_model
 from pneumonia.model_utils import adapt_model_head
-
+from pathlib import Path
 
 def main() -> None:
+    project_root = Path(__file__).resolve().parent.parent
+    checkpoint_path = project_root / "artifacts" / "best_model.pth"
+
+    
     model=load_model("densenet121-res224-all")
     for name, module in model.named_children():
         print(name, "->", module)
@@ -13,5 +17,9 @@ def main() -> None:
     model = adapt_model_head(model, num_classes=2)
     print("Après :", model.classifier)
 
+    finetuned = load_finetuned_model(checkpoint_path)
+    print("Modèle fine-tuné chargé :", finetuned.classifier)
+
+    
 if __name__ == "__main__":
     main()

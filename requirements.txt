@@ -10,3 +10,6 @@ matplotlib
 
 #Monitoring
 mlflow
+
+#Evaluation
+scikit-learn
