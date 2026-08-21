@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from pneumonia.dataset_utils import list_image_paths, stratified_train_val_split, compute_class_weights, class_weights_to_tensor
 from pneumonia.dataset import ChestXrayDataset, get_dataloaders
-from pneumonia.transforms import preprocess_xray
+from pneumonia.transforms import preprocess_xray, compose_with_preprocess, random_luminance
 from pneumonia.model_loader import load_model
 from pneumonia.model_utils import adapt_model_head
 from pneumonia.training import train_model
@@ -16,6 +16,7 @@ def main(
         learning_rate: float = 1e-4,
         batch_size: int=16,
         val_size: float=0.1,
+        use_augmentation: bool = True,
         checkpoint_path: Path | None = None,
         seed: int = 42,
         weights_name: str="densenet121-res224-all",
@@ -33,6 +34,7 @@ def main(
         mlflow.log_param("num_epochs",num_epochs)
         mlflow.log_param("batch_size",batch_size)
         mlflow.log_param("val_size",val_size)
+        mlflow.log_param("use_augmentation", use_augmentation)
         mlflow.log_param("seed",seed)
         mlflow.log_param("model",weights_name)
        
@@ -49,7 +51,12 @@ def main(
 
         train_pairs, val_pairs = stratified_train_val_split(normal_paths, pneumonia_paths, val_size=val_size,seed=seed)
 
-        train_dataset = ChestXrayDataset(train_pairs, preprocess_xray)
+        if use_augmentation:
+            train_transform = compose_with_preprocess(random_luminance)
+        else:
+            train_transform = preprocess_xray
+            
+        train_dataset = ChestXrayDataset(train_pairs, train_transform)
         val_dataset = ChestXrayDataset(val_pairs, preprocess_xray)
 
         train_dataloader, val_dataloader = get_dataloaders(train_dataset, val_dataset, batch_size=batch_size)

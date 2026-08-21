@@ -227,3 +227,4 @@ artifacts/
 mlruns/
 mlartifacts/
 mlflow.db
+*.db

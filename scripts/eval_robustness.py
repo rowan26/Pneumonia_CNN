@@ -6,8 +6,8 @@ import mlflow
 from pneumonia.dataset_utils import list_image_paths, build_pairs
 from pneumonia.evaluation import collect_predictions, compute_metrics
 from pneumonia.dataset import ChestXrayDataset
-from pneumonia.perturbations import add_gaussian_noise, apply_luminance_scaling, with_perturbation
-from pneumonia.transforms import preprocess_xray
+from pneumonia.perturbations import add_gaussian_noise, apply_luminance_scaling
+from pneumonia.transforms import preprocess_xray,compose_with_preprocess
 from pneumonia.model_loader import load_finetuned_model
 
 
@@ -38,8 +38,8 @@ def main(
 
     conditions = {
         "baseline": preprocess_xray,
-        "bruit gaussien (sigma=10)": with_perturbation(add_gaussian_noise),
-        "luminosite (x1.2)": with_perturbation(apply_luminance_scaling),
+        "bruit gaussien (sigma=10)": compose_with_preprocess(add_gaussian_noise),
+        "luminosite (x1.2)": compose_with_preprocess(apply_luminance_scaling),
     }
 
     all_metrics = {}
