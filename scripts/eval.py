@@ -9,13 +9,14 @@ from pneumonia.model_loader import load_finetuned_model
 import mlflow
 from torch.utils.data import DataLoader
 
+from pneumonia.config import DEFAULT_WEIGHTS_NAME
 
 def main(
         data_dir: Path | None = None,
         batch_size: int=16,
         checkpoint_path: Path | None = None,
         run_id: str | None = None,
-        weights_name: str="densenet121-res224-all",
+        weights_name: str = DEFAULT_WEIGHTS_NAME,
         tracking_uri: str | None = None) -> None:
         
        

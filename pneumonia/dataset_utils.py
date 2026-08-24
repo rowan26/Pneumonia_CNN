@@ -4,6 +4,7 @@ import random
 from collections import Counter
 import torch
 
+
 def count_images(path: Path) -> int:
     """Compte les fichiers valides (extension autorisée) dans un dossier."""
 

@@ -1,7 +1,7 @@
 import torch.nn as nn
+from pneumonia.config import NUM_CLASSES
 
-
-def adapt_model_head(model, num_classes: int=2) -> nn.Module:
+def adapt_model_head(model, num_classes: int=NUM_CLASSES) -> nn.Module:
 
     """Remplace la tête (dernière couche) du modèle pour l'adapter au
     nombre de classes de la tâche cible.

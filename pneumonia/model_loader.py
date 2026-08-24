@@ -5,8 +5,10 @@ import torch.nn as nn
 import torch
 from pathlib import Path
 
+from pneumonia.config import DEFAULT_WEIGHTS_NAME, NUM_CLASSES
+
 #Load the model
-def load_model(weights="densenet121-res224-all"):
+def load_model(weights=DEFAULT_WEIGHTS_NAME):
     """Charge un modèle DenseNet121 pré-entraîné via TorchXRayVision.
 
     Args:
@@ -28,7 +30,7 @@ def load_model(weights="densenet121-res224-all"):
         raise RuntimeError("Impossible de charger le modèle")
 
 
-def load_finetuned_model(checkpoint_path: Path, weights_name: str = "densenet121-res224-all", num_classes: int =2, device: str = "cpu") -> torch.nn.Module:
+def load_finetuned_model(checkpoint_path: Path, weights_name: str = DEFAULT_WEIGHTS_NAME, num_classes: int = NUM_CLASSES, device: str = "cpu") -> torch.nn.Module:
     """Reconstruit l'architecture (DenseNet121 pré-entraîné + tête adaptée) puis y injecte les poids fine-tunés sauvegardés."""
 
 

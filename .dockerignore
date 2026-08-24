@@ -1,0 +1,24 @@
+# Données et environnements — jamais nécessaires au build
+data/
+venv/
+venv_inference/
+*.db
+mlruns/
+
+# Artefacts : on ne garde que le checkpoint courant
+artifacts/*
+!artifacts/best_model.pth
+
+# Code hors périmètre d'inférence
+scripts/check_*.py
+scripts/trains.py
+scripts/eval*.py
+scripts/explore_dataset.py
+
+# Divers
+.git/
+.gitignore
+__pycache__/
+*.pyc
+README.md
+requirements.txt

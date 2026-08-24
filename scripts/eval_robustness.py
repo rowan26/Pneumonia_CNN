@@ -10,13 +10,14 @@ from pneumonia.perturbations import add_gaussian_noise, apply_luminance_scaling
 from pneumonia.transforms import preprocess_xray,compose_with_preprocess
 from pneumonia.model_loader import load_finetuned_model
 
+from pneumonia.config import DEFAULT_WEIGHTS_NAME
 
 def main(
         data_dir: Path | None = None,
         batch_size: int = 16,
         checkpoint_path: Path | None = None,
         run_id: str | None = None,
-        weights_name: str = "densenet121-res224-all",
+        weights_name: str = DEFAULT_WEIGHTS_NAME,
         tracking_uri: str | None = None) -> None:
 
     project_root = Path(__file__).resolve().parent.parent

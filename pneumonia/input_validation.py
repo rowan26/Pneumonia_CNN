@@ -1,4 +1,4 @@
-DEFAULT_ALLOWED_EXTENSIONS = (".jpeg", ".jpg", ".png")
+from pneumonia.config import DEFAULT_ALLOWED_EXTENSIONS
 
 from PIL import Image
 from pathlib import Path

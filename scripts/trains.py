@@ -9,6 +9,7 @@ from pneumonia.model_utils import adapt_model_head
 from pneumonia.training import train_model
 import mlflow
 
+from pneumonia.config import DEFAULT_WEIGHTS_NAME
 
 def main(
         data_dir: Path | None = None,
@@ -19,7 +20,7 @@ def main(
         use_augmentation: bool = True,
         checkpoint_path: Path | None = None,
         seed: int = 42,
-        weights_name: str="densenet121-res224-all",
+        weights_name: str = DEFAULT_WEIGHTS_NAME,
         tracking_uri: str | None = None) -> None:
 
     torch.manual_seed(seed)

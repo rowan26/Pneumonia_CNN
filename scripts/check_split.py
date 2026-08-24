@@ -3,8 +3,7 @@ from collections import Counter
 from pneumonia.dataset_utils import list_image_paths, stratified_train_val_split, display_dataset_counts, compute_class_weights
 
 
-LABEL_NAMES = {0: "NORMAL", 1: "PNEUMONIA"}
-
+from pneumonia.config import LABEL_NAMES
 
 def pairs_to_counts(train_pairs, val_pairs) -> dict:
 
