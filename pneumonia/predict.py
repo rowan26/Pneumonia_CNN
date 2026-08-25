@@ -1,19 +1,19 @@
 import skimage
 import torch
-
+from typing import BinaryIO
 from pneumonia.transforms import preprocess_xray
 
 from pathlib import Path
 import torch.nn as nn
 from pneumonia.config import LABEL_NAMES
 
-def predict(model: nn.Module, path: Path) -> dict:
+def predict(model: nn.Module, source: Path | BinaryIO) -> dict:
     """Fait une prédiction sur une image donnée, en utilisant un modèle fine-tuné.
 
     Args:"""
 
 
-    img = skimage.io.imread(path)      # charger
+    img = skimage.io.imread(source)      # charger
     img = preprocess_xray(img)          # prétraiter (numpy -> numpy)
     img = torch.from_numpy(img).float() # convertir en tensor
     img = img.unsqueeze(0)              # ajouter la dimension batch

@@ -13,3 +13,6 @@ mlflow
 
 #Evaluation
 scikit-learn
+
+#UI
+streamlit

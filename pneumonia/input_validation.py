@@ -1,5 +1,5 @@
 from pneumonia.config import DEFAULT_ALLOWED_EXTENSIONS
-
+from typing import BinaryIO
 from PIL import Image
 from pathlib import Path
 
@@ -10,13 +10,16 @@ def is_valid_extension(filename: str, allowed_extensions: tuple[str, ...] = DEFA
     return filename.lower().endswith(allowed_extensions)
 
 
-def is_valid_image(path: Path) -> bool:
+def is_valid_image(source: Path | BinaryIO) -> bool:
     """Vérifie qu'un fichier est une image lisible et non corrompue.
 
     N'ouvre le fichier que pour le vérifier ; ne modifie ni ne supprime rien.
     """
     try:
-        Image.open(path).verify()
+        Image.open(source).verify()
         return True
     except (IOError, SyntaxError): #IOError when programming exception occurs when a system taks failed
         return False
+    finally:
+        if hasattr(source, "seek"):
+            source.seek(0)
