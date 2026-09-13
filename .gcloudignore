@@ -1,0 +1,31 @@
+# Ce fichier remplace .gitignore pour le contexte envoye a Cloud Build.
+# Sans lui, gcloud utilise .gitignore et exclut artifacts/ — donc le
+# checkpoint, pourtant necessaire au build.
+
+# Donnees et environnements
+data/
+venv/
+venv_inference/
+*.db
+mlruns/
+
+# Artefacts : on garde uniquement le checkpoint courant
+artifacts/*
+!artifacts/best_model.pth
+
+# Code hors perimetre d'inference
+scripts/check_*.py
+scripts/trains.py
+scripts/eval*.py
+scripts/explore_dataset.py
+pneumonia/dataset.py
+pneumonia/dataset_utils.py
+pneumonia/training.py
+pneumonia/evaluation.py
+pneumonia/perturbations.py
+
+# Divers
+.git/
+__pycache__/
+*.pyc
+requirements.txt
