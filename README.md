@@ -1,12 +1,18 @@
 # Pneumonia Detection — pipeline MLOps de bout en bout
 
+**[Essayer l'application](https://pneumonia-detection-1095985503396.europe-west1.run.app)**
+
 Détection de pneumonie sur radiographies thoraciques, à partir d'un
 DenseNet121 pré-entraîné ([TorchXRayVision](https://github.com/mlmed/torchxrayvision))
 fine-tuné pour une classification binaire.
 
+> Premier chargement lent (20 à 30 secondes) : le service démarre à la
+> demande et redescend à zéro instance en l'absence de trafic.
+
 L'objectif n'est pas d'atteindre le meilleur score possible, mais de
 construire une chaîne complète — données, entraînement, évaluation,
-robustesse, packaging, interface — dont **chaque décision est justifiable**.
+robustesse, packaging, déploiement — dont **chaque décision est
+justifiable**.
 
 ---
 
@@ -57,7 +63,7 @@ ratés sous perturbation sont retombés de 22 à 2.
 
 **Coût mesuré** : l'AUC sur images d'origine est passée de 0,9755 à 0,9562.
 En apprenant à ignorer la luminosité, le modèle a renoncé à des nuances de
-contraste qui portaient un peu d'information utile.
+contraste qui portaient de l'information.
 
 **Arbitrage retenu** : des performances stables quelle que soit la
 condition (AUC 0,954–0,973) valent mieux qu'un pic conditionné à des images
@@ -92,6 +98,8 @@ variées.
 ├── streamlit_app/
 │   └── app.py                  # Interface d'upload et prédiction
 ├── Dockerfile
+├── .dockerignore
+├── .gcloudignore               # Contexte de build Cloud Run
 ├── requirements.txt            # Développement et entraînement
 ├── requirements-inference.txt  # Inférence seule, versions figées
 └── pyproject.toml
@@ -146,11 +154,11 @@ environnements.
 - **Validation en deux temps** des fichiers image : extension d'abord
   (filtre rapide), intégrité réelle du contenu ensuite (`PIL.verify()`) —
   une extension `.jpg` ne garantit rien sur le contenu.
-- **Aucune écriture disque de l'image uploadée.** L'app traite un flux
-  binaire en mémoire. En contexte médical, écrire une radiographie
-  identifiable sur un serveur, même temporairement, soulève des obligations
-  de conservation, de nettoyage et de traçabilité — évitées ici par
-  construction.
+- **Aucune écriture disque de l'image uploadée.** L'application traite un
+  flux binaire en mémoire (`Path | BinaryIO`). En contexte médical, écrire
+  une radiographie identifiable sur un serveur, même temporairement,
+  soulève des obligations de conservation, de nettoyage et de traçabilité —
+  évitées ici par construction.
 - **Logs sans détail d'exception brut** : seul le type d'erreur est
   consigné, pour éviter la fuite de chemins ou d'informations internes.
 - **Conteneur non-root**, périmètre de fichiers explicite dans le
@@ -198,6 +206,45 @@ Deux autres points traités :
   démarrage retéléchargeait 300 Mo depuis GitHub : dépendance réseau à
   l'exécution et point de défaillance externe pour un outil de dépistage.
 - **`.dockerignore`** — contexte de build réduit de plus d'1 Go à 28 Mo.
+
+---
+
+## Déploiement
+
+L'application tourne sur **Google Cloud Run** :
+https://pneumonia-detection-1095985503396.europe-west1.run.app
+
+Cloud Run a été retenu après élimination des alternatives sur un critère
+mesurable : le besoin d'environ 1,5 Gio de RAM pour charger PyTorch et le
+modèle. Render et Koyeb plafonnent à 512 Mo sur leur offre gratuite,
+Fly.io et Railway n'ont plus de tier gratuit, et Hugging Face a basculé
+son SDK Docker en payant en juillet 2026.
+
+Cloud Run est la seule option gratuite qui utilise le Dockerfile tel quel,
+grâce à la facturation par requête et au scale-to-zero : le conteneur
+n'existe pas en l'absence de trafic.
+
+**Configuration** : 2 Gio de mémoire, `max-instances 1` comme plafond de
+coût, `min-instances 0`, timeout 600 s pour absorber le démarrage à froid,
+région `europe-west1` (Tier 1).
+
+**Deux compromis assumés et documentés :**
+
+- **CORS et XSRF Streamlit désactivés.** Le proxy Cloud Run réécrit les
+  en-têtes d'origine, ce qui fait échouer les vérifications sur des
+  requêtes pourtant légitimes, l'upload en particulier. Acceptable ici :
+  application publique, sans authentification ni données persistées. À ne
+  pas reproduire sur une application gérant des sessions utilisateur — la
+  vraie solution serait alors de configurer les en-têtes au niveau du
+  proxy.
+- **`min-instances 0`.** Garder une instance chaude supprimerait les
+  démarrages à froid, mais coûterait plus de 60 $ par mois pour un seul
+  vCPU. La latence au premier accès est le prix de la gratuité.
+
+Un détail à connaître pour reproduire le déploiement : `gcloud run deploy
+--source` n'utilise pas `.dockerignore` mais se rabat sur `.gitignore` en
+l'absence de `.gcloudignore` — ce qui excluait le checkpoint du contexte de
+build et faisait échouer le `COPY`.
 
 ---
 
@@ -271,10 +318,10 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 
 ```bash
 docker build -t pneumonia-cnn .
-docker run --rm -p 8501:8501 pneumonia-cnn
+docker run --rm -p 8080:8080 pneumonia-cnn
 ```
 
-Interface accessible sur `http://localhost:8501`.
+Interface accessible sur `http://localhost:8080`.
 
 ---
 
@@ -297,13 +344,13 @@ validé**. En particulier :
 
 ## Prochaines étapes
 
-- Déploiement de l'interface sur une plateforme accessible publiquement
 - Explicabilité (Grad-CAM) — visualiser les zones qui ont influencé la
   décision, tant pour la confiance utilisateur que pour vérifier que le
   modèle regarde bien les poumons et non un artefact d'image
-- Tests unitaires (`pytest`)
-- Monitoring en conditions réelles et documentation de conformité
-  (logique EU AI Act / MDR)
+- Monitoring en conditions réelles : dérive du modèle, logs de prédictions
+  sans stocker les images sensibles
+- Tests unitaires (`pytest`) et CI/CD
+- Documentation de conformité, dans la logique EU AI Act / MDR
 
 ---
 
